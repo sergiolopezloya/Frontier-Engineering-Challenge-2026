@@ -51,11 +51,11 @@ async function runBaseline() {
 
   // 2. Rudimentary Baseline Prompt
   const baselinePrompt = `
-Eres un asistente de programación. Analiza este código de React y dame un Dockerfile para producción:
+You are a coding assistant. Analyze this React codebase and provide a Dockerfile for production:
 
 ${codebaseContext}
 
-Dame tu análisis y el Dockerfile.
+Provide your analysis and the Dockerfile.
 `.trim();
 
   logger.recordStep(
