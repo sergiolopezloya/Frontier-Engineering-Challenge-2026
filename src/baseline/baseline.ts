@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import chalk from 'chalk';
 import { TrajectoryLogger } from '../logger/trajectoryLogger.js';
+import { generateWithRetry } from '../utils/resilientGenAi.js';
 
 dotenv.config();
 
@@ -80,21 +81,19 @@ Provide your analysis and the Dockerfile.
     const ai = new GoogleGenAI({ apiKey: API_KEY });
     const startTime = Date.now();
 
-    const response = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: baselinePrompt
-    });
+    const result = await generateWithRetry(ai, MODEL_NAME, baselinePrompt);
 
     const duration = Date.now() - startTime;
-    const rawOutput = response.text || '';
-    const usage = response.usageMetadata;
+    const rawOutput = result.text || '';
+    const usage = result.usageMetadata;
 
     logger.recordStep(
       'BaselineRunner',
       'TOOL_RESPONSE',
-      'Received single-shot response from Gemini API',
+      `Received single-shot response from Gemini API (via ${result.modelUsed})`,
       {
         toolOutput: {
+          modelUsed: result.modelUsed,
           promptTokenCount: usage?.promptTokenCount,
           candidatesTokenCount: usage?.candidatesTokenCount,
           totalTokenCount: usage?.totalTokenCount
@@ -144,8 +143,8 @@ Provide your analysis and the Dockerfile.
     console.log(chalk.cyan('\n--- GENERATED BASELINE OUTPUT PREVIEW ---'));
     console.log(rawOutput.slice(0, 500) + '...\n');
 
-  } catch (error: any) {
-    const errorMsg = error.message || String(error);
+  } catch (error: unknown) {
+    const errorMsg: string = error instanceof Error ? error.message : String(error);
     logger.recordStep('BaselineRunner', 'ERROR', errorMsg, { error: errorMsg });
     logger.finalize(`FAILED: ${errorMsg}`);
     console.error(chalk.red.bold(`\n❌ Execution failed: ${errorMsg}`));
