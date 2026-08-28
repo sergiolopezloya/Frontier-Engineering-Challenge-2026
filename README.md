@@ -87,9 +87,19 @@ cp .env.example .env
 npm run baseline
 ```
 
-### Running the Multi-Agent System
+### Running the Multi-Agent System on Evaluation Repositories
 ```bash
+# 1. Standard Vite React 16 App (Security secrets, memory leak)
 npm run agents
+
+# 2. Legacy Enterprise Webpack App (React 15, AWS credentials, deprecated lifecycles)
+npm run agents:enterprise
+
+# 3. Next.js 14 SSR Application (Server-side rendering, DB secrets, dynamic runtime)
+npm run agents:nextjs
+
+# 4. Microfrontend Widget (Library bundle, CORS, cross-origin message risks)
+npm run agents:widget
 ```
 
 ### ⏱️ Performance, Cost & Reproduction Specs

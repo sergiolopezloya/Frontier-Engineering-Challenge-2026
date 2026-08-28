@@ -8,7 +8,9 @@
     "build": "tsc",
     "baseline": "tsx src/baseline/baseline.ts",
     "agents": "tsx src/index.ts",
-    "agents:enterprise": "tsx src/index.ts test-repos/complex-enterprise-app"
+    "agents:enterprise": "tsx src/index.ts test-repos/complex-enterprise-app",
+    "agents:nextjs": "tsx src/index.ts test-repos/nextjs-ssr-app",
+    "agents:widget": "tsx src/index.ts test-repos/microfrontend-widget"
   },
   "keywords": [
     "agentic-workflows",
