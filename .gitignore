@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+trajectories/*.log
+trajectories/*.json
+!trajectories/sample_baseline_run.json
+.DS_Store
