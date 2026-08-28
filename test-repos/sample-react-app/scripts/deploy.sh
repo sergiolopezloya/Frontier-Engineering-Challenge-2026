@@ -1,65 +1,86 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Configuration Variables
-PLATFORM="${1:-}"
-REGION="${AWS_REGION:-us-east-1}"
-IMAGE_NAME="sample-react-app"
-TAG="${IMAGE_TAG:-latest}"
+# CLI Variables and Config defaults
+APP_NAME="sample-react-app"
+AWS_REGION="us-east-1"
+GCP_REGION="us-central1"
+AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-}"
+GCP_PROJECT_ID="${GCP_PROJECT_ID:-}"
+VITE_BACKEND_URL="${VITE_BACKEND_URL:-https://api.production.internal}"
 
-print_usage() {
-    echo "Usage: $0 [aws-ecs | gcp-cloud-run]"
+usage() {
+    echo "Usage: $0 [aws|gcp]"
+    echo "Ensure environment variables AWS_ACCOUNT_ID or GCP_PROJECT_ID are set."
     exit 1
 }
 
-if [ -z "$PLATFORM" ]; then
-    print_usage
+if [ $# -lt 1 ]; then
+    usage
 fi
 
-if [ "$PLATFORM" == "aws-ecs" ]; then
-    echo "[INFO] Starting deployment to AWS ECS..."
+PROVIDER=$1
+
+deploy_aws() {
+    if [ -z "$AWS_ACCOUNT_ID" ]; then
+        echo "[-] Error: AWS_ACCOUNT_ID environment variable is missing."
+        exit 1
+    fi
+    echo "[+] Beginning AWS Elastic Container Service (ECS) deployment pipeline..."
     
-    AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-    ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
-    FULL_IMAGE_URI="${ECR_REGISTRY}/${IMAGE_NAME}:${TAG}"
-
-    echo "[INFO] Authenticating with AWS ECR..."
-    aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
-
-    echo "[INFO] Building Docker image..."
-    docker build -t "${IMAGE_NAME}:${TAG}" .
-
-    echo "[INFO] Tagging image for ECR..."
-    docker tag "${IMAGE_NAME}:${TAG}" "$FULL_IMAGE_URI"
-
-    echo "[INFO] Pushing image to ECR..."
-    docker push "$FULL_IMAGE_URI"
-
-    echo "[INFO] Forcing ECS service update..."
-    aws ecs update-service --cluster production-cluster --service sample-react-app-service --force-new-deployment --region "$REGION"
-    echo "[SUCCESS] AWS ECS deployment triggered successfully!"
-
-elif [ "$PLATFORM" == "gcp-cloud-run" ]; then
-    echo "[INFO] Starting deployment to GCP Cloud Run..."
+    # Securely retrieve login token for AWS ECR
+    aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
     
-    GCP_PROJECT_ID="${GCP_PROJECT_ID:?Environment variable GCP_PROJECT_ID is required}"
-    GCP_REGION="${GCP_REGION:-us-central1}"
-    FULL_IMAGE_URI="gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:${TAG}"
+    # Compile container passing environmental variable target
+    docker build \
+        --build-arg VITE_BACKEND_URL="$VITE_BACKEND_URL" \
+        -t "$APP_NAME:latest" .
+        
+    # Tag image matching repository URI
+    ECR_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$APP_NAME:latest"
+    docker tag "$APP_NAME:latest" "$ECR_URI"
+    
+    # Push target
+    docker push "$ECR_URI"
+    
+    # Trigger Rolling Update deployment
+    echo "[+] Updating Active Task Definition in ECS Cluster..."
+    aws ecs update-service --cluster "$APP_NAME-cluster" --service "$APP_NAME-service" --force-new-deployment --region "$AWS_REGION"
+    echo "[+] Deployment Complete on AWS ECS!"
+}
 
-    echo "[INFO] Building and submitting via Google Cloud Build..."
-    gcloud builds submit --tag "$FULL_IMAGE_URI" .
-
-    echo "[INFO] Deploying to Cloud Run..."
-    gcloud run deploy sample-react-app \
-        --image "$FULL_IMAGE_URI" \
+deploy_gcp() {
+    if [ -z "$GCP_PROJECT_ID" ]; then
+        echo "[-] Error: GCP_PROJECT_ID environment variable is missing."
+        exit 1
+    fi
+    echo "[+] Beginning GCP Cloud Run deployment pipeline..."
+    
+    # Configure local credentials for GCP Artifact Registry
+    gcloud auth configure-docker "$GCP_REGION-docker.pkg.dev" --quiet
+    
+    # Build within Google Cloud Build engine securely pushing registry target
+    gcloud builds submit --tag "$GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/gcr.io/$APP_NAME:latest" \
+        --build-arg VITE_BACKEND_URL="$VITE_BACKEND_URL" .
+        
+    # Deploy target to Cloud Run
+    gcloud run deploy "$APP_NAME" \
+        --image "$GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/gcr.io/$APP_NAME:latest" \
         --platform managed \
         --region "$GCP_REGION" \
         --allow-unauthenticated \
         --port 80
+    echo "[+] Deployment Complete on GCP Cloud Run!"
+}
 
-    echo "[SUCCESS] GCP Cloud Run deployment completed successfully!"
-
-else
-    echo "[ERROR] Unknown target platform: $PLATFORM"
-    print_usage
-fi
+case "$PROVIDER" in
+    aws)
+        deploy_aws
+        ;;
+    gcp)
+        deploy_gcp
+        ;;
+    *)
+        usage
+        ;;
+esac

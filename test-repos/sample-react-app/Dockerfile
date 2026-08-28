@@ -1,49 +1,49 @@
 # ==========================================
-# Stage 1: Build Stage
+# Stage 1: Build Environment (Node Builder)
 # ==========================================
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package configuration files
-COPY package*.json ./
+# Install build essentials for alpine if native extensions are needed
+RUN apk add --no-cache libc6-compat
 
-# Install all dependencies (including devDependencies for building Vite app)
-RUN npm ci
+# Leverage caching for dependency installation
+COPY package*.json .npmrc* ./ 
+RUN npm ci --only=production
 
 # Copy source code
-COPY . .-
+COPY . .
 
-# Build application (Vite reads VITE_* env vars at build-time)
+# Pass build-time environment variables (Required for Vite static injection)
+ARG VITE_BACKEND_URL
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+
+# Build production-ready assets
 RUN npm run build
 
 # ==========================================
-# Stage 2: Production Runner Stage
+# Stage 2: Web Server Runner (Nginx Alpine)
 # ==========================================
-FROM nginx:alpine-slim
+FROM nginx:1.25-alpine
 
-# Install security updates and curl for healthcheck
-RUN apk update && apk upgrade --no-cache && \
-    apk add --no-cache curl
+# Copy Nginx Configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy built static assets from builder stage
+# Copy static compiled assets from Builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Setup non-root execution permissions for Nginx
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
+# Setup non-root execution policy for compliance and vulnerability mitigation
+RUN apk add --no-cache libcap && \
     touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid
+    chown -R nginx:nginx /var/run/nginx.pid /var/cache/nginx /var/log/nginx /usr/share/nginx/html /etc/nginx && \
+    setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
 
+# Drop root privileges
 USER nginx
 
+# Expose port (standard HTTP port bound securely as unprivileged user)
 EXPOSE 80
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost/ || exit 1
-
+# Default container execution instruction
 CMD ["nginx", "-g", "daemon off;"]
