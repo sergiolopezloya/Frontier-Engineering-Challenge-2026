@@ -92,6 +92,25 @@ npm run baseline
 npm run agents
 ```
 
+### ⏱️ Performance, Cost & Reproduction Specs
+- **Approximate Runtime**: ~12s to 18s per full audit & generation cycle.
+- **Estimated Cost**: ~$0.0012 USD per repository run (within Google Gemini Free/Pay-as-you-go tier).
+- **Supported Environment**: Node.js 18+ (tested on Node 20 / Windows & Linux).
+
+---
+
+## 💡 Main Failure Mode & Hot Take (Key Learnings)
+
+### ⚠️ The Main Failure Mode Observed
+When building autonomous coding agents for infrastructure, the single most critical failure mode is **Context Smuggling & Shallow Hallucination**:
+- A single prompt attempts to solve two conflicting objectives at once: deep static security auditing (which requires high critical scrutiny and AST detail) and infrastructure templating (which requires boilerplate adherence and port binding accuracy).
+- In the single-prompt baseline, the model compressed the security findings, entirely missed the hardcoded frontend token, and produced a generic Dockerfile that failed on client-side routing.
+
+### 🔥 Our Hot Take for Building Agentic Systems
+> **"Specialization beats context stuffing every single time, but only if sealed with a Human Sandbox Gate."**
+> 
+> Trying to give one model 'enough context' to write both code audits and cloud deployment manifests produces mediocre results in both. By decoupling the architecture into an **Auditor/Analyst** (diagnostic domain) and a **DevOps Engineer** (synthesis domain) interconnected via typed JSON schemas and protected by an interactive **Human-in-the-Loop approval gate**, you eliminate unverified hallucinations and produce production-ready code that an engineer is actually willing to sign their name to.
+
 ---
 
 ## 📁 Repository Structure

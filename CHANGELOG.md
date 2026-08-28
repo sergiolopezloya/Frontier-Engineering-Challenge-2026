@@ -48,3 +48,15 @@ This changelog documents the iterative evolution of our Agentic Workflow solutio
   - Quality score increased from **67%** (Baseline) to **100%** (Multi-Agent).
   - Number of generated deployment assets increased from 1 generic file to 5 production-grade manifests.
   - Zero unverified automated writes (100% human-verified execution).
+
+---
+
+## 📌 Main Failure Mode & Hot Take
+
+### Main Failure Mode Observed
+Single-prompt monolithic LLM approaches suffer from **Context Smuggling & Verification Blindspots**. In our baseline tests, asking a single prompt to audit code and output a Dockerfile caused the model to gloss over critical security vulnerabilities (e.g., hardcoded tokens and memory leaks) and hallucinate simplified container configurations without essential SPA routing rules or cloud infrastructure scripts.
+
+### The Hot Take
+> **"Agentic pipelines should be designed around domain boundaries and human checkpoints, not massive prompts."**
+> 
+> By decoupling the Auditor (diagnostic domain) from the DevOps Engineer (generative domain) and enforcing strict JSON-schema message passing with a terminal sandbox gate, we turned a 67% incomplete baseline into a 100% production-ready, safe, and verifiable delivery workflow.
