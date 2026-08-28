@@ -1,0 +1,76 @@
+{
+  "sessionId": "sample_baseline_run",
+  "sessionName": "Baseline_Single_Prompt_Run",
+  "targetRepo": "test-repos/sample-react-app",
+  "mode": "BASELINE",
+  "startTime": "2026-08-28T18:29:42.301Z",
+  "steps": [
+    {
+      "stepIndex": 1,
+      "timestamp": "2026-08-28T18:29:42.302Z",
+      "agentName": "BaselineRunner",
+      "action": "GOAL_DEFINED",
+      "summary": "Execute rudimentary single-prompt baseline on sample React app",
+      "details": {
+        "thought": "Evaluating simple 1-shot LLM capability without specialized tools or multi-agent orchestration."
+      }
+    },
+    {
+      "stepIndex": 2,
+      "timestamp": "2026-08-28T18:29:42.303Z",
+      "agentName": "BaselineRunner",
+      "action": "THOUGHT",
+      "summary": "Concatenated all raw source code files into a single prompt string",
+      "details": {
+        "thought": "Naive context stuffing into a single request without indexing, AST, or separation of concerns."
+      }
+    },
+    {
+      "stepIndex": 3,
+      "timestamp": "2026-08-28T18:29:42.304Z",
+      "agentName": "BaselineRunner",
+      "action": "TOOL_CALL",
+      "summary": "Call Gemini API with single unrefined prompt",
+      "details": {
+        "toolName": "GoogleGenAI.generateContent",
+        "toolInput": {
+          "model": "gemini-3.1-flash-lite",
+          "promptLength": 2320
+        }
+      }
+    },
+    {
+      "stepIndex": 4,
+      "timestamp": "2026-08-28T18:29:54.228Z",
+      "agentName": "BaselineRunner",
+      "action": "TOOL_RESPONSE",
+      "summary": "Received single-shot response from Gemini API",
+      "details": {
+        "toolOutput": {
+          "promptTokenCount": 787,
+          "candidatesTokenCount": 791,
+          "totalTokenCount": 2255
+        }
+      }
+    },
+    {
+      "stepIndex": 5,
+      "timestamp": "2026-08-28T18:29:54.231Z",
+      "agentName": "BaselineRunner",
+      "action": "FINAL_RESPONSE",
+      "summary": "Baseline single-shot run completed. Passed 4/6 quality criteria (67%). Latency: 11922ms.",
+      "details": {
+        "feedback": "{\n  \"detectedHardcodedSecret\": true,\n  \"detectedMemoryLeak\": true,\n  \"detectedLegacyReact16\": false,\n  \"providedMultiStageDockerfile\": true,\n  \"providedNginxConfig\": true,\n  \"providedCloudDeploymentScripts\": false\n}"
+      }
+    }
+  ],
+  "metrics": {
+    "humanInterventions": 0,
+    "durationMs": 11922,
+    "totalPromptTokens": 787,
+    "totalCandidatesTokens": 791,
+    "totalTokens": 2255
+  },
+  "endTime": "2026-08-28T18:29:54.232Z",
+  "outcomeSummary": "Baseline single-shot run completed. Passed 4/6 quality criteria (67%). Latency: 11922ms."
+}
