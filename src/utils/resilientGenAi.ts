@@ -34,14 +34,14 @@ function getErrorMessage(error: unknown): string {
 }
 
 /**
- * Robust execution wrapper that handles temporary 503 (High Demand) / 429 (Rate Limit) errors
+ * Robust execution wrapper that handles temporary 503 (High Demand) / 429 (Rate Limit) / 404 (Model not found)
  * with exponential backoff and automatic model fallback.
  */
 export async function generateWithRetry(
   ai: GoogleGenAI,
   primaryModel: string,
   prompt: string,
-  fallbackModels: string[] = ['gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.5-flash-lite'],
+  fallbackModels: string[] = ['gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'],
   maxRetries: number = 3
 ): Promise<GenerationResult> {
   // Combine primary and fallbacks without duplicates
@@ -50,10 +50,12 @@ export async function generateWithRetry(
   let lastError: unknown = null;
 
   for (const model of candidateModels) {
+    console.log(chalk.cyan(`  🚀 Invoking model: '${model}'`));
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        if (attempt > 1 || model !== primaryModel) {
-          console.log(chalk.gray(`  🔄 Requesting with model '${model}' (Attempt ${attempt}/${maxRetries})...`));
+        if (attempt > 1) {
+          console.log(chalk.gray(`  🔄 Retrying '${model}' (Attempt ${attempt}/${maxRetries})...`));
         }
 
         const response = await ai.models.generateContent({
@@ -68,20 +70,26 @@ export async function generateWithRetry(
         };
       } catch (error: unknown) {
         lastError = error;
-        const errorStr = getErrorMessage(error);
-        const is503or429 =
+        const errorStr: string = getErrorMessage(error);
+        const is503or429: boolean =
           errorStr.includes('503') ||
           errorStr.includes('429') ||
           errorStr.includes('high demand') ||
           errorStr.includes('UNAVAILABLE') ||
           errorStr.includes('RESOURCE_EXHAUSTED');
+        const is404NotFound: boolean = errorStr.includes('404') || errorStr.includes('NOT_FOUND') || errorStr.includes('is not found');
+
+        if (is404NotFound) {
+          console.log(chalk.red(`  ❌ Model '${model}' was not found (404 NOT_FOUND). Switching to next candidate...`));
+          break; // Don't retry a non-existent model name, move immediately to next candidate
+        }
 
         if (is503or429 && attempt < maxRetries) {
-          const waitMs = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s...
+          const waitMs: number = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s...
           console.log(chalk.yellow(`  ⚠️ Model '${model}' high demand (503/429). Retrying in ${waitMs / 1000}s...`));
           await new Promise((resolve) => setTimeout(resolve, waitMs));
         } else {
-          // Break to next candidate model if available
+          console.log(chalk.gray(`  ⚠️ Model '${model}' failed. Trying next available model in fallback list...`));
           break;
         }
       }
