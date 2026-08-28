@@ -24,11 +24,7 @@ export class MultiAgentOrchestrator {
     console.log(chalk.bold.cyan('  🤖 MULTI-AGENT REACT AUDIT & DEVOPS INFRASTRUCTURE ORCHESTRATION PIPELINE'));
     console.log(chalk.bold.cyan('================================================================================\n'));
 
-    const logger = new TrajectoryLogger(
-      'MultiAgent_React_DevOps_Pipeline',
-      this.options.targetRepoPath,
-      'MULTI_AGENT'
-    );
+    const logger = new TrajectoryLogger('MultiAgent_React_DevOps_Pipeline', this.options.targetRepoPath, 'MULTI_AGENT');
 
     const sandbox = new SandboxGate(logger);
 
@@ -37,7 +33,8 @@ export class MultiAgentOrchestrator {
       'GOAL_DEFINED',
       'Orchestrate Analyst and DevOps agents to audit React repo and provision infrastructure with human gate',
       {
-        thought: 'Sequential multi-agent workflow: 1. Deep Code Audit -> 2. Infra Synthesis -> 3. Human Sandbox Approval -> 4. Comparative Evaluation.'
+        thought:
+          'Sequential multi-agent workflow: 1. Deep Code Audit -> 2. Infra Synthesis -> 3. Human Sandbox Approval -> 4. Comparative Evaluation.'
       }
     );
 
@@ -49,7 +46,9 @@ export class MultiAgentOrchestrator {
     const auditReport = await analyst.analyzeRepository(this.options.targetRepoPath);
 
     console.log(chalk.bold.green('\n📊 --- AUDIT REPORT SUMMARY ---'));
-    console.log(`Framework: ${auditReport.techStack.framework} ${auditReport.techStack.frameworkVersion} (${auditReport.techStack.bundler})`);
+    console.log(
+      `Framework: ${auditReport.techStack.framework} ${auditReport.techStack.frameworkVersion} (${auditReport.techStack.bundler})`
+    );
     console.log(`Overall Health Score: ${auditReport.overallHealthScore}/100`);
     console.log(`Security Findings: ${auditReport.securityFindings.length}`);
     console.log(`Tech Debt Findings: ${auditReport.technicalDebtFindings.length}`);
@@ -58,7 +57,9 @@ export class MultiAgentOrchestrator {
     if (auditReport.securityFindings.length > 0) {
       console.log(chalk.bold.red('\n🚨 Security Vulnerabilities Detected:'));
       for (const finding of auditReport.securityFindings) {
-        console.log(chalk.red(`  • [${finding.severity}] ${finding.category} in ${finding.file}: ${finding.description}`));
+        console.log(
+          chalk.red(`  • [${finding.severity}] ${finding.category} in ${finding.file}: ${finding.description}`)
+        );
         console.log(chalk.gray(`    Fix: ${finding.remediation}`));
       }
     }
@@ -112,11 +113,26 @@ export class MultiAgentOrchestrator {
     const duration = Date.now() - startTime;
 
     const evaluationScorecard = {
-      detectedHardcodedSecret: auditReport.securityFindings.some(f => f.category.toLowerCase().includes('secret') || f.description.toLowerCase().includes('secret') || f.description.toLowerCase().includes('key')),
-      detectedMemoryLeak: auditReport.technicalDebtFindings.some(f => f.type === 'MEMORY_LEAK' || f.description.toLowerCase().includes('interval') || f.description.toLowerCase().includes('leak')),
-      detectedLegacyReact16: auditReport.techStack.frameworkVersion.includes('16') || auditReport.summary.toLowerCase().includes('16'),
-      providedMultiStageDockerfile: Boolean(generatedInfra.dockerfile.content.includes('FROM') && generatedInfra.dockerfile.content.includes('AS')),
-      providedNginxConfig: Boolean(generatedInfra.nginxConfig.content.includes('try_files') && generatedInfra.nginxConfig.content.includes('gzip')),
+      detectedHardcodedSecret: auditReport.securityFindings.some(
+        (f) =>
+          f.category.toLowerCase().includes('secret') ||
+          f.description.toLowerCase().includes('secret') ||
+          f.description.toLowerCase().includes('key')
+      ),
+      detectedMemoryLeak: auditReport.technicalDebtFindings.some(
+        (f) =>
+          f.type === 'MEMORY_LEAK' ||
+          f.description.toLowerCase().includes('interval') ||
+          f.description.toLowerCase().includes('leak')
+      ),
+      detectedLegacyReact16:
+        auditReport.techStack.frameworkVersion.includes('16') || auditReport.summary.toLowerCase().includes('16'),
+      providedMultiStageDockerfile: Boolean(
+        generatedInfra.dockerfile.content.includes('FROM') && generatedInfra.dockerfile.content.includes('AS')
+      ),
+      providedNginxConfig: Boolean(
+        generatedInfra.nginxConfig.content.includes('try_files') && generatedInfra.nginxConfig.content.includes('gzip')
+      ),
       providedCloudDeploymentScripts: Boolean(generatedInfra.cloudDeployScript.content.length > 20)
     };
 
@@ -126,24 +142,21 @@ export class MultiAgentOrchestrator {
 
     const outcome = `Multi-Agent pipeline completed. Passed ${passedChecks}/${totalChecks} criteria (${scorePct}%). Human approved ${approvedCount}/${infraFiles.length} files. Latency: ${duration}ms.`;
 
-    logger.recordStep(
-      'Orchestrator',
-      'FINAL_RESPONSE',
-      outcome,
-      {
-        finalContent: JSON.stringify({ auditReport, generatedInfra, evaluationScorecard }, null, 2),
-        feedback: `All ${passedChecks}/${totalChecks} quality standards fulfilled with active human approval gate.`
-      }
-    );
+    logger.recordStep('Orchestrator', 'FINAL_RESPONSE', outcome, {
+      finalContent: JSON.stringify({ auditReport, generatedInfra, evaluationScorecard }, null, 2),
+      feedback: `All ${passedChecks}/${totalChecks} quality standards fulfilled with active human approval gate.`
+    });
 
     logger.finalize(outcome, {
       durationMs: duration
     });
 
-    console.log(chalk.bold.yellow('\n================================================================================'));
+    console.log(
+      chalk.bold.yellow('\n================================================================================')
+    );
     console.log(chalk.bold.yellow('  🏆 FINAL MULTI-AGENT VS BASELINE COMPARISON SCORECARD'));
     console.log(chalk.bold.yellow('================================================================================'));
-    
+
     console.table([
       {
         Metric: 'Technical Debt & Security Audit',

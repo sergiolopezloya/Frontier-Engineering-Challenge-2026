@@ -8,15 +8,19 @@ import { generateWithRetry } from '../utils/resilientGenAi.js';
 
 dotenv.config();
 
-const API_KEY = process.env.GEMINI_API_KEY;
-const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+export async function runBaseline(
+  customTargetRepo?: string,
+  customApiKey?: string,
+  customModel?: string
+): Promise<void> {
+  const apiKey = customApiKey ?? process.env.GEMINI_API_KEY;
+  const modelName = customModel ?? process.env.GEMINI_MODEL ?? 'gemini-3.1-flash-lite';
 
-async function runBaseline() {
   console.log(chalk.bold.blue('======================================================'));
   console.log(chalk.bold.blue('  🚀 RUNNING HACKATHON BASELINE (SINGLE PROMPT PIPELINE)'));
   console.log(chalk.bold.blue('======================================================\n'));
 
-  const targetRepo = path.resolve(process.cwd(), 'test-repos/sample-react-app');
+  const targetRepo = customTargetRepo || path.resolve(process.cwd(), 'test-repos/sample-react-app');
   const logger = new TrajectoryLogger('Baseline_Single_Prompt_Run', targetRepo, 'BASELINE');
 
   logger.recordStep(
@@ -27,12 +31,7 @@ async function runBaseline() {
   );
 
   // 1. Gather repository context
-  const filesToRead = [
-    'package.json',
-    'src/App.tsx',
-    'src/index.tsx',
-    'vite.config.ts'
-  ];
+  const filesToRead = ['package.json', 'src/App.tsx', 'src/index.tsx', 'vite.config.ts'];
 
   let codebaseContext = '';
   for (const relPath of filesToRead) {
@@ -43,12 +42,9 @@ async function runBaseline() {
     }
   }
 
-  logger.recordStep(
-    'BaselineRunner',
-    'THOUGHT',
-    'Concatenated all raw source code files into a single prompt string',
-    { thought: 'Naive context stuffing into a single request without indexing, AST, or separation of concerns.' }
-  );
+  logger.recordStep('BaselineRunner', 'THOUGHT', 'Concatenated all raw source code files into a single prompt string', {
+    thought: 'Naive context stuffing into a single request without indexing, AST, or separation of concerns.'
+  });
 
   // 2. Rudimentary Baseline Prompt
   const baselinePrompt = `
@@ -59,29 +55,24 @@ ${codebaseContext}
 Provide your analysis and the Dockerfile.
 `.trim();
 
-  logger.recordStep(
-    'BaselineRunner',
-    'TOOL_CALL',
-    `Call Gemini API (${MODEL_NAME}) with single unrefined prompt`,
-    {
-      toolName: 'GoogleGenAI.generateContent',
-      toolInput: { model: MODEL_NAME, promptLength: baselinePrompt.length }
-    }
-  );
+  logger.recordStep('BaselineRunner', 'TOOL_CALL', `Call Gemini API (${modelName}) with single unrefined prompt`, {
+    toolName: 'GoogleGenAI.generateContent',
+    toolInput: { model: modelName, promptLength: baselinePrompt.length }
+  });
 
-  if (!API_KEY) {
+  if (!apiKey) {
     const errorMsg = 'GEMINI_API_KEY environment variable is missing. Please set it in .env file.';
     logger.recordStep('BaselineRunner', 'ERROR', errorMsg, { error: errorMsg });
     logger.finalize('FAILED: Missing GEMINI_API_KEY', { durationMs: 0 });
     console.error(chalk.red.bold(`\n❌ Error: ${errorMsg}`));
-    process.exit(1);
+    return;
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     const startTime = Date.now();
 
-    const result = await generateWithRetry(ai, MODEL_NAME, baselinePrompt);
+    const result = await generateWithRetry(ai, modelName, baselinePrompt);
 
     const duration = Date.now() - startTime;
     const rawOutput = result.text || '';
@@ -103,12 +94,26 @@ Provide your analysis and the Dockerfile.
 
     // 3. Automated Rubric Evaluation Checklist
     const evaluationChecklist = {
-      detectedHardcodedSecret: rawOutput.toLowerCase().includes('sk_live') || rawOutput.toLowerCase().includes('secret') || rawOutput.toLowerCase().includes('api key'),
-      detectedMemoryLeak: rawOutput.toLowerCase().includes('clearinterval') || rawOutput.toLowerCase().includes('memory leak') || rawOutput.toLowerCase().includes('setinterval'),
-      detectedLegacyReact16: rawOutput.toLowerCase().includes('react 16') || rawOutput.toLowerCase().includes('react 18') || rawOutput.toLowerCase().includes('reactdom.render'),
-      providedMultiStageDockerfile: rawOutput.includes('AS build') || rawOutput.includes('as builder') || rawOutput.includes('as build-stage'),
+      detectedHardcodedSecret:
+        rawOutput.toLowerCase().includes('sk_live') ||
+        rawOutput.toLowerCase().includes('secret') ||
+        rawOutput.toLowerCase().includes('api key'),
+      detectedMemoryLeak:
+        rawOutput.toLowerCase().includes('clearinterval') ||
+        rawOutput.toLowerCase().includes('memory leak') ||
+        rawOutput.toLowerCase().includes('setinterval'),
+      detectedLegacyReact16:
+        rawOutput.toLowerCase().includes('react 16') ||
+        rawOutput.toLowerCase().includes('react 18') ||
+        rawOutput.toLowerCase().includes('reactdom.render'),
+      providedMultiStageDockerfile:
+        rawOutput.includes('AS build') || rawOutput.includes('as builder') || rawOutput.includes('as build-stage'),
       providedNginxConfig: rawOutput.toLowerCase().includes('nginx.conf') || rawOutput.includes('nginx:alpine'),
-      providedCloudDeploymentScripts: rawOutput.toLowerCase().includes('aws') || rawOutput.toLowerCase().includes('gcp') || rawOutput.toLowerCase().includes('cloud run') || rawOutput.toLowerCase().includes('ecs')
+      providedCloudDeploymentScripts:
+        rawOutput.toLowerCase().includes('aws') ||
+        rawOutput.toLowerCase().includes('gcp') ||
+        rawOutput.toLowerCase().includes('cloud run') ||
+        rawOutput.toLowerCase().includes('ecs')
     };
 
     const passedChecks = Object.values(evaluationChecklist).filter(Boolean).length;
@@ -117,15 +122,10 @@ Provide your analysis and the Dockerfile.
 
     const outcomeSummary = `Baseline single-shot run completed. Passed ${passedChecks}/${totalChecks} quality criteria (${scorePct}%). Latency: ${duration}ms.`;
 
-    logger.recordStep(
-      'BaselineRunner',
-      'FINAL_RESPONSE',
-      outcomeSummary,
-      {
-        finalContent: rawOutput,
-        feedback: JSON.stringify(evaluationChecklist, null, 2)
-      }
-    );
+    logger.recordStep('BaselineRunner', 'FINAL_RESPONSE', outcomeSummary, {
+      finalContent: rawOutput,
+      feedback: JSON.stringify(evaluationChecklist, null, 2)
+    });
 
     logger.finalize(outcomeSummary, {
       durationMs: duration,
@@ -142,7 +142,6 @@ Provide your analysis and the Dockerfile.
 
     console.log(chalk.cyan('\n--- GENERATED BASELINE OUTPUT PREVIEW ---'));
     console.log(rawOutput.slice(0, 500) + '...\n');
-
   } catch (error: unknown) {
     const errorMsg: string = error instanceof Error ? error.message : String(error);
     logger.recordStep('BaselineRunner', 'ERROR', errorMsg, { error: errorMsg });
@@ -151,4 +150,7 @@ Provide your analysis and the Dockerfile.
   }
 }
 
-runBaseline();
+/* v8 ignore next 3 */
+if (process.argv[1] && process.argv[1].includes('baseline.ts')) {
+  runBaseline();
+}

@@ -37,12 +37,12 @@ export interface TrajectorySession {
   mode: 'BASELINE' | 'MULTI_AGENT';
   startTime: string;
   endTime?: string;
-  metrics?: {
+  metrics: {
     durationMs?: number;
     totalPromptTokens?: number;
     totalCandidatesTokens?: number;
     totalTokens?: number;
-    humanInterventions?: number;
+    humanInterventions: number;
   };
   steps: TrajectoryStep[];
   outcomeSummary?: string;
@@ -52,8 +52,13 @@ export class TrajectoryLogger {
   private session: TrajectorySession;
   private logsDir: string;
 
-  constructor(sessionName: string, targetRepo: string, mode: 'BASELINE' | 'MULTI_AGENT' = 'BASELINE') {
-    this.logsDir = path.resolve(process.cwd(), 'trajectories');
+  constructor(
+    sessionName: string,
+    targetRepo: string,
+    mode: 'BASELINE' | 'MULTI_AGENT' = 'BASELINE',
+    customLogsDir?: string
+  ) {
+    this.logsDir = customLogsDir || path.resolve(process.cwd(), 'trajectories');
     if (!fs.existsSync(this.logsDir)) {
       fs.mkdirSync(this.logsDir, { recursive: true });
     }
@@ -88,9 +93,7 @@ export class TrajectoryLogger {
     };
 
     if (action === 'HUMAN_APPROVAL_REQUEST' || action === 'HUMAN_APPROVAL_RESPONSE') {
-      if (this.session.metrics) {
-        this.session.metrics.humanInterventions = (this.session.metrics.humanInterventions || 0) + 1;
-      }
+      this.session.metrics.humanInterventions++;
     }
 
     this.session.steps.push(step);

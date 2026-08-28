@@ -31,7 +31,7 @@ export class SandboxGate {
     console.log(`Description: ${request.description}`);
     console.log(chalk.gray('Preview of content to be written:'));
     console.log(chalk.gray('┌─────────────────────────────────────────────────────────────'));
-    
+
     // Print preview lines
     const lines = request.content.split('\n');
     const previewLines = lines.slice(0, 15);

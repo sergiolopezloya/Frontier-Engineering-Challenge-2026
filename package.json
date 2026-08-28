@@ -10,7 +10,15 @@
     "agents": "tsx src/index.ts",
     "agents:enterprise": "tsx src/index.ts test-repos/complex-enterprise-app",
     "agents:nextjs": "tsx src/index.ts test-repos/nextjs-ssr-app",
-    "agents:widget": "tsx src/index.ts test-repos/microfrontend-widget"
+    "agents:widget": "tsx src/index.ts test-repos/microfrontend-widget",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"__tests__/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"__tests__/**/*.ts\"",
+    "check:dead-code": "knip",
+    "check:all": "npm run build && npm run lint && npm run format:check && npm run check:dead-code && npm run test:coverage"
   },
   "keywords": [
     "agentic-workflows",
@@ -27,8 +35,19 @@
     "dotenv": "^16.4.7"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.68.0",
+    "@typescript-eslint/parser": "^8.68.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.11.0",
+    "knip": "^6.33.0",
+    "prettier": "^3.9.6",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^4.1.11"
   }
 }

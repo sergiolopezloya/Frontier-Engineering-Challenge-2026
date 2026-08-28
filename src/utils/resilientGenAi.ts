@@ -41,7 +41,13 @@ export async function generateWithRetry(
   ai: GoogleGenAI,
   primaryModel: string,
   prompt: string,
-  fallbackModels: string[] = ['gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'],
+  fallbackModels: string[] = [
+    'gemini-3.7-flash',
+    'gemini-3.5-flash',
+    'gemini-flash-latest',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite'
+  ],
   maxRetries: number = 3
 ): Promise<GenerationResult> {
   // Combine primary and fallbacks without duplicates
@@ -77,7 +83,8 @@ export async function generateWithRetry(
           errorStr.includes('high demand') ||
           errorStr.includes('UNAVAILABLE') ||
           errorStr.includes('RESOURCE_EXHAUSTED');
-        const is404NotFound: boolean = errorStr.includes('404') || errorStr.includes('NOT_FOUND') || errorStr.includes('is not found');
+        const is404NotFound: boolean =
+          errorStr.includes('404') || errorStr.includes('NOT_FOUND') || errorStr.includes('is not found');
 
         if (is404NotFound) {
           console.log(chalk.red(`  ❌ Model '${model}' was not found (404 NOT_FOUND). Switching to next candidate...`));
@@ -99,5 +106,6 @@ export async function generateWithRetry(
   if (lastError instanceof Error) {
     throw lastError;
   }
-  throw new Error(getErrorMessage(lastError) || 'All model candidates exhausted.');
+  const fallbackMsg = lastError ? getErrorMessage(lastError) : 'All model candidates exhausted.';
+  throw new Error(fallbackMsg);
 }

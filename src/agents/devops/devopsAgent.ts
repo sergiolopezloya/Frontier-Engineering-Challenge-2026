@@ -21,7 +21,8 @@ export class DevOpsAgent {
       'GOAL_DEFINED',
       'Synthesize production-grade containerization and cloud deployment infrastructure based on Analyst findings',
       {
-        thought: 'Designing multi-stage Dockerfile, NGINX SPA reverse proxy, security ignore rules, and automated cloud deploy manifests.'
+        thought:
+          'Designing multi-stage Dockerfile, NGINX SPA reverse proxy, security ignore rules, and automated cloud deploy manifests.'
       }
     );
 
@@ -128,8 +129,16 @@ You MUST return a strictly valid JSON object matching this schema (do NOT wrap i
 
   private parseJsonInfra(raw: string, audit: AuditReport): GeneratedInfra {
     try {
-      const cleaned = raw.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
-      return JSON.parse(cleaned) as GeneratedInfra;
+      const cleaned = raw
+        .replace(/^```json\s*/, '')
+        .replace(/^```\s*/, '')
+        .replace(/\s*```$/, '')
+        .trim();
+      const parsed = JSON.parse(cleaned);
+      if (!parsed || typeof parsed !== 'object' || !parsed.dockerfile || !parsed.nginxConfig || !parsed.dockerIgnore) {
+        throw new Error('Incomplete GeneratedInfra schema');
+      }
+      return parsed as GeneratedInfra;
     } catch {
       // Fallback robust infrastructure
       const outDir = audit.infrastructureRequirements.buildOutputDirectory || 'dist';

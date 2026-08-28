@@ -51,7 +51,8 @@ export class AnalystAgent {
       'THOUGHT',
       'Extracted source files. Now generating structured technical audit using specialized prompt template.',
       {
-        thought: 'Evaluating package versions for CVEs, React 16 vs 18 hooks deprecations, unhandled intervals/subscriptions, and hardcoded API tokens.'
+        thought:
+          'Evaluating package versions for CVEs, React 16 vs 18 hooks deprecations, unhandled intervals/subscriptions, and hardcoded API tokens.'
       }
     );
 
@@ -175,8 +176,22 @@ You MUST return a strictly valid JSON object matching this schema (do NOT wrap i
 
   private parseJsonReport(raw: string): AuditReport {
     try {
-      const cleaned = raw.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
-      return JSON.parse(cleaned) as AuditReport;
+      const cleaned = raw
+        .replace(/^```json\s*/, '')
+        .replace(/^```\s*/, '')
+        .replace(/\s*```$/, '')
+        .trim();
+      const parsed = JSON.parse(cleaned);
+      if (
+        !parsed ||
+        typeof parsed !== 'object' ||
+        !Array.isArray(parsed.securityFindings) ||
+        !Array.isArray(parsed.technicalDebtFindings) ||
+        !parsed.techStack
+      ) {
+        throw new Error('Incomplete JSON schema');
+      }
+      return parsed as AuditReport;
     } catch {
       // Fallback
       return {

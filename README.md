@@ -102,6 +102,25 @@ npm run agents:nextjs
 npm run agents:widget
 ```
 
+### 🛡️ Quality Engineering & Test Suite
+```bash
+# Run 23 unit test suites with 99%+ code coverage
+npm run test:coverage
+
+# Run ESLint (0 errors, 0 warnings)
+npm run lint
+
+# Run Prettier code style check
+npm run format:check
+
+# Run Knip dead code & unused export verification
+npm run check:dead-code
+
+# Run all 4 quality verification pillars in a single pass
+npm run check:all
+```
+*(See [`docs/QUALITY_STANDARDS.md`](docs/QUALITY_STANDARDS.md) for full engineering architecture details).*
+
 ### ⏱️ Performance, Cost & Reproduction Specs
 - **Approximate Runtime**: ~12s to 18s per full audit & generation cycle.
 - **Estimated Cost**: ~$0.0012 USD per repository run (within Google Gemini Free/Pay-as-you-go tier).
