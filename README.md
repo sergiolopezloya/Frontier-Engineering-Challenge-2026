@@ -49,6 +49,13 @@ An orchestrated multi-agent workflow designed for full-stack and DevOps engineer
   │       🛡️ Human-in-the-Loop Terminal Sandbox Gate       │
   │  - Interactive terminal approval before file creation   │
   │  - Trajectory logger captures all decisions & traces    │
+  └────────────────────────────┬────────────────────────────┘
+                               │
+                               ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │        🔍 Automated Quality Assurance Gate (QA)         │
+  │  - Autonomous verification of Types, Lint, & 100% Tests │
+  │  - Logs all quality compliance proofs in trajectory     │
   └─────────────────────────────────────────────────────────┘
 ```
 

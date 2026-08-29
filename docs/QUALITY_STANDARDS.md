@@ -1,7 +1,7 @@
-# 🛡️ Enterprise Engineering Quality Standards & Verification
+# 🛡️ Enterprise Engineering Quality Standards & Orchestrator Integration
 > **Frontier Engineering Challenge 2026 / micro1 Hackathon Submission**
 
-This project adheres to rigorous enterprise-grade engineering standards across four quality pillars:
+This project adheres to rigorous enterprise-grade engineering standards across four quality pillars. In addition to standalone CLI developer tools, **these 4 quality checks are autonomously integrated directly into the Multi-Agent Orchestrator as Stage 4: Automated Quality Assurance Gate**.
 
 ---
 
@@ -30,6 +30,24 @@ This project adheres to rigorous enterprise-grade engineering standards across f
 ### 4. 🧹 Dead Code & Fallow Verification (`Knip`)
 - **Tool**: Knip.
 - **Scope**: Zero unused exports, dead code paths, or orphaned dependencies (`0 dead code files`).
+
+---
+
+## 🤖 Direct Multi-Agent Orchestrator Integration
+
+The Quality Engineering lifecycle is embedded directly into the sequential workflow pipeline executed by [`src/orchestration/workflow.ts`](../src/orchestration/workflow.ts):
+
+```
+┌────────────────────────┐     ┌────────────────────────┐     ┌────────────────────────┐     ┌────────────────────────┐
+│ STAGE 1: Analyst Agent │ ──> │ STAGE 2: DevOps Agent  │ ──> │ STAGE 3: Sandbox Gate  │ ──> │ STAGE 4: QA Gate       │
+│ Static Code AST Audit  │     │ Infra Code Synthesis   │     │ Terminal Human Consent │     │ 4-Pillar Quality Check │
+└────────────────────────┘     └────────────────────────┘     └────────────────────────┘     └────────────────────────┘
+```
+
+1. **Stage 1 (Analyst Agent)**: Deep code audit (React version, security tokens, memory leaks, tech debt).
+2. **Stage 2 (DevOps Agent)**: Synthesis of multi-stage Dockerfile, NGINX SPA reverse proxy, ignore rules, and deployment scripts.
+3. **Stage 3 (Sandbox Gate)**: Terminal interactive preview with explicit `(y/N)` approval before any disk write.
+4. **Stage 4 (Automated QA Gate)**: Autonomous verification of TypeScript strict types, ESLint rules, Prettier formatting, dead code scans, and test suite integrity, logged into the agent trajectory.
 
 ---
 

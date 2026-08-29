@@ -1,24 +1,11 @@
-version: "3.8"
-
+version: '3.8'
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - VITE_BACKEND_URL=http://localhost:3000/api
-    image: sample-react-app:local
-    container_name: react_app_prod_preview
+  app:
+    build: .
     ports:
-      - "3000:80"
-    environment:
-      - NODE_ENV=production
-    restart: always
-    security_opt:
-      - no-new-privileges:true
+      - "8080:80"
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      test: ["CMD", "curl", "-f", "http://localhost/index.html"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s

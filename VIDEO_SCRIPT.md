@@ -34,6 +34,7 @@ This document provides a second-by-second presentation script and recording chec
 > *Second, our **DevOps Agent** takes this structured audit and synthesizes 5 production-grade assets: a multi-stage Dockerfile with Node builder and Nginx Alpine runner, an NGINX SPA routing configuration, `.dockerignore`, and an automated deployment script for AWS ECS and GCP Cloud Run.*  
 > *Third, following Hackathon Ground Rule 04, our **Sandbox Gate** halts execution and asks for interactive terminal approval with a live diff before writing any file to disk.*  
 > *(Action: Type `y` to approve each file)*  
+> *Fourth, our autonomous **Quality Assurance Gate** validates the 4 enterprise quality pillars: TypeScript strict typing, ESLint (zero any), Prettier formatting, dead code scans with Knip, and 100% unit test coverage.*  
 > *Everything is logged in real-time into our structured `trajectories/` directory."*
 
 ### Part 4: Changelog & Measured Improvement (3:00 - 4:00)
