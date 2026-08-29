@@ -1,0 +1,59 @@
+================================================================================
+AGENT TRAJECTORY: Baseline_Single_Prompt_Run
+Session ID: sample_baseline_run
+Mode: BASELINE
+Target: test-repos/sample-react-app
+Start: 2026-08-28T18:29:42.301Z
+End:   2026-08-28T18:29:54.232Z
+Duration: 11922ms
+Total Tokens: 2255
+Prompt Tokens: 787
+Candidates Tokens: 791
+Human Interventions: 0
+Outcome: Baseline single-shot run completed. Passed 4/6 quality criteria (67%). Latency: 11922ms.
+================================================================================
+
+[STEP 1] [2026-08-28T18:29:42.302Z] [BaselineRunner] [GOAL_DEFINED]
+Summary: Execute rudimentary single-prompt baseline on sample React app
+Thought: Evaluating simple 1-shot LLM capability without specialized tools or multi-agent orchestration.
+
+--------------------------------------------------------------------------------
+
+[STEP 2] [2026-08-28T18:29:42.303Z] [BaselineRunner] [THOUGHT]
+Summary: Concatenated all raw source code files into a single prompt string
+Thought: Naive context stuffing into a single request without indexing, AST, or separation of concerns.
+
+--------------------------------------------------------------------------------
+
+[STEP 3] [2026-08-28T18:29:42.304Z] [BaselineRunner] [TOOL_CALL]
+Summary: Call Gemini API with single unrefined prompt
+Tool: GoogleGenAI.generateContent
+Input: {
+  "model": "gemini-3.1-flash-lite",
+  "promptLength": 2320
+}
+
+--------------------------------------------------------------------------------
+
+[STEP 4] [2026-08-28T18:29:54.228Z] [BaselineRunner] [TOOL_RESPONSE]
+Summary: Received single-shot response from Gemini API
+Output: {
+  "promptTokenCount": 787,
+  "candidatesTokenCount": 791,
+  "totalTokenCount": 2255
+}
+
+--------------------------------------------------------------------------------
+
+[STEP 5] [2026-08-28T18:29:54.231Z] [BaselineRunner] [FINAL_RESPONSE]
+Summary: Baseline single-shot run completed. Passed 4/6 quality criteria (67%). Latency: 11922ms.
+Feedback:
+{
+  "detectedHardcodedSecret": true,
+  "detectedMemoryLeak": true,
+  "detectedLegacyReact16": false,
+  "providedMultiStageDockerfile": true,
+  "providedNginxConfig": true,
+  "providedCloudDeploymentScripts": false
+}
+================================================================================

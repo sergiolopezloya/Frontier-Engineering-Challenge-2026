@@ -5,5 +5,7 @@ coverage/
 trajectories/*.log
 trajectories/*.json
 !trajectories/sample_baseline_run.json
+!trajectories/sample_baseline_run.log
 !trajectories/sample_multi_agent_run.json
+!trajectories/sample_multi_agent_run.log
 .DS_Store
