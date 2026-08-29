@@ -6,5 +6,5 @@ build
 coverage
 logs
 *.md
-.vscode
-.idea
+Dockerfile
+.dockerignore
