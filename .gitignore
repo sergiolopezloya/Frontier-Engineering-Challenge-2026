@@ -9,3 +9,4 @@ trajectories/*.json
 !trajectories/sample_multi_agent_run.json
 !trajectories/sample_multi_agent_run.log
 .DS_Store
+*_SCRIPT.md

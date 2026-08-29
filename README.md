@@ -150,7 +150,6 @@ When building autonomous coding agents for infrastructure, the single most criti
 ```text
 ├── CHANGELOG.md               # Continuous improvement log with evidence
 ├── README.md                  # Reproduction guide, architecture & quality standards
-├── VIDEO_SCRIPT.md            # Hackathon walkthrough video script (< 5 mins)
 ├── package.json
 ├── tsconfig.json
 ├── vitest.config.ts
